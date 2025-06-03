@@ -11,6 +11,15 @@ class LoginResponse(BaseModel):
     rol: str | None = None
     EmpKey: int
     
+class HotelIn(BaseModel):
+    HotelID: int
+    Nombre: str
+    Cadena: str
+    Ciudad: str
+    Pais: str
+    Estrellas: int
+    Direccion: str
+
 class HotelOut(BaseModel):
     HotelKey: int
     Nombre: str
