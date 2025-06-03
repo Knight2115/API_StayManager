@@ -228,3 +228,49 @@ def crear_reserva(reserva_in: schemas.ReservaIn, db: Session = Depends(get_db)):
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+
+from pydantic import BaseModel
+from typing import Optional
+
+class HotelIn(BaseModel):
+    HotelID: Optional[int] = None
+    Nombre: str
+    Cadena: Optional[str] = None
+    Ciudad: Optional[str] = None
+    Pais: Optional[str] = None
+    Estrellas: Optional[int] = None
+    Direccion: Optional[str] = None
+
+class HotelOut(HotelIn):
+    HotelKey: int
+
+    class Config:
+        orm_mode = True
+
+@app.post("/nuevo-hotel", response_model=schemas.HotelOut, status_code=201)
+def crear_hotel(hotel_in: schemas.HotelIn, db: Session = Depends(get_db)):
+    try:
+        # Validar si ya existe un hotel con el mismo nombre
+        existe = db.query(models.Hotel).filter(models.Hotel.Nombre == hotel_in.Nombre).first()
+        if existe:
+            raise HTTPException(status_code=400, detail="Ya existe un hotel con ese nombre")
+
+        nuevo_hotel = models.Hotel(
+            HotelID=hotel_in.HotelID,
+            Nombre=hotel_in.Nombre,
+            Cadena=hotel_in.Cadena,
+            Ciudad=hotel_in.Ciudad,
+            Pais=hotel_in.Pais,
+            Estrellas=hotel_in.Estrellas,
+            Direccion=hotel_in.Direccion
+        )
+        db.add(nuevo_hotel)
+        db.commit()
+        db.refresh(nuevo_hotel)
+        return nuevo_hotel
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
