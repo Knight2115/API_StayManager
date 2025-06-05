@@ -274,3 +274,44 @@ def crear_hotel(hotel_in: schemas.HotelIn, db: Session = Depends(get_db)):
         traceback.print_exc()
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/nueva-habitacion", response_model=schemas.HabitacionOut, status_code=201)
+def crear_habitacion(habitacion_in: schemas.HabitacionIn, db: Session = Depends(get_db)):
+    try:
+        # Verificar si el hotel existe
+        hotel = db.query(models.Hotel).filter(models.Hotel.HotelKey == habitacion_in.HotelKey).first()
+        if not hotel:
+            raise HTTPException(status_code=404, detail="Hotel no encontrado")
+
+        # Crear la nueva habitación
+        nueva_habitacion = models.Habitacion(
+            HabitacionID=habitacion_in.HabitacionID,
+            HotelKey=habitacion_in.HotelKey,
+            TipoHabKey=habitacion_in.TipoHabKey,
+            NumeroHab=habitacion_in.NumeroHab,
+            Piso=habitacion_in.Piso,
+            Capacidad=habitacion_in.Capacidad,
+            Vista=habitacion_in.Vista
+        )
+
+        db.add(nueva_habitacion)
+        db.commit()
+        db.refresh(nueva_habitacion)
+
+        return nueva_habitacion
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al crear la habitación: {str(e)}")
+    
+@app.get("/tipoHab", response_model=List[schemas.TipoHabOut])
+def litas_tipoHab(db: Session = Depends(get_db)):
+    try:
+        tipoHab = db.query(models.TipoHab).limit(10).all()
+        return tipoHab
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))

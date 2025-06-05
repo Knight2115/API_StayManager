@@ -53,9 +53,19 @@ class TipoHabOut(BaseModel):
     class Config:
         orm_mode = True
 
+class HabitacionIn(BaseModel):
+    HabitacionID: int
+    HotelKey: int
+    TipoHabKey: int
+    NumeroHab: int
+    Piso: int
+    Capacidad: int
+    Vista: bool
+
 class HabitacionOut(BaseModel):
     HabitacionKey: int
     NumeroHab: int
+    Capacidad: int
     TipoHab: TipoHabOut
 
     class Config:
